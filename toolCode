@@ -1,0 +1,58 @@
+import os
+import datetime
+import hashlib
+
+
+def calculate_hash(file_path, hash_algorithm="sha256", buffer_size=8192):
+    """
+    Calculate the hash of a file using the specified hash algorithm.
+    """
+    hasher = hashlib.new(hash_algorithm)
+    with open(file_path, "rb") as file:
+        buffer = file.read(buffer_size)
+        while buffer:
+            hasher.update(buffer)
+            buffer = file.read(buffer_size)
+    return hasher.hexdigest()
+
+
+def generate_file_metadata(file_path):
+    """
+    Generate metadata for a given file.
+    """
+    file_stat = os.stat(file_path)
+    created_time = datetime.datetime.fromtimestamp(file_stat.st_ctime)
+    modified_time = datetime.datetime.fromtimestamp(file_stat.st_mtime)
+    accessed_time = datetime.datetime.fromtimestamp(file_stat.st_atime)
+
+    file_metadata = (
+        f"File Name: {os.path.basename(file_path)}\n"
+        f"File Path: {file_path}\n"
+        f"Size (Bytes): {file_stat.st_size}\n"
+        f"Created Time: {created_time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        f"Modified Time: {modified_time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        f"Accessed Time: {accessed_time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        f"SHA256 Hash: {calculate_hash(file_path)}\n"
+        "----------------------------------------\n")
+
+    return file_metadata
+
+
+def generate_forensic_report(directory_path,
+                             report_filename="forensic_report.txt"):
+    """
+    Generate a forensic report for all files in the specified directory.
+    """
+    with open(report_filename, "w") as report_file:
+        for root, dirs, files in os.walk(directory_path):
+            for file_name in files:
+                file_path = os.path.join(root, file_name)
+                file_metadata = generate_file_metadata(file_path)
+                report_file.write(file_metadata)
+
+    print(f"Forensic report generated successfully: {report_filename}")
+
+
+if __name__ == "__main__":
+    # Example: Generate a forensic report for files in the "evidence" directory
+    generate_forensic_report("evidence.txt")
