@@ -1,0 +1,52 @@
+import hashlib
+import os
+import datetime
+
+
+def calculate_hash(file_path, algorithm):
+    hash_function = hashlib.new(algorithm)
+    with open(file_path, "rb") as file:
+        while chunk := file.read(8192):
+            hash_function.update(chunk)
+    return hash_function.hexdigest()
+
+
+def get_file_creation_time(file_path):
+    # Get file creation time
+    created_time = os.path.getctime(file_path)
+
+    # Convert timestamp to human-readable format
+    created_time_str = datetime.datetime.fromtimestamp(created_time).strftime(
+        '%Y-%m-%d %H:%M:%S')
+
+    return created_time_str
+
+
+def main():
+    file_path = input("Enter the path of the file: ")
+
+    if not os.path.isfile(file_path):
+        print("Invalid file path. Please provide a valid file path.")
+        return
+
+    algorithms = ["md5", "sha256", "sha1", "sha224", "sha384", "sha512"]
+
+    print(f"\nFile: {file_path}\n")
+
+    # Calculate and print hash values
+    for algorithm in algorithms:
+        hash_value = calculate_hash(file_path, algorithm)
+        print(f"{algorithm.upper()} Hash: {hash_value}\n")
+
+    # Get and print file creation time
+    created_time = get_file_creation_time(file_path)
+    print(f"Created Time: {created_time}\n")
+
+    # Get and print file size in bytes and gigabytes
+    file_size_bytes = os.path.getsize(file_path)
+    file_size_gb = file_size_bytes / (1024**3)  # 1 GB = 1024^3 bytes
+    print(f"File Size: {file_size_bytes} bytes ({file_size_gb:.2f} GB)")
+
+
+if __name__ == "__main__":
+    main()
